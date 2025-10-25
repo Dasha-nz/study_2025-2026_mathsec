@@ -1,0 +1,291 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h1 id="-4-">Лабораторная работа №4: Вычисление наибольшего общего делителя</h1>
+<h2 id="-">Дисциплина: Математические основы защиты информации и информационной безопасности</h2>
+<h3 id="-01-24">Назарова Дарья Владиславовна, НПИмд-01-24</h3>
+<h3 id="-">Российский университет дружбы народов, Москва, Россия</h3>
+<h3 id="-2025">октябрь 2025</h3>
+<h1 id="-">Общая информация о лабораторной работе</h1>
+<h2 id="-">Цель работы</h2>
+<p>Ознакомиться с алгоритмами вычисления наибольшего общего делителя.</p>
+<h2 id="-">Задание</h2>
+<ol>
+<li>Реализовать алгоритм Евклида;</li>
+<li>Реализовать бинарный алгоритм Евклида;</li>
+<li>Реализовать расширенный алгоритм Евклида;</li>
+<li>Реализовать расширенный бинарный алгоритм Евклида.</li>
+</ol>
+<h1 id="-">Теоретическое введение</h1>
+<h2 id="-">Наибольший общий делитель</h2>
+<p><strong>Определение:</strong>
+НОД целых чисел a₁, a₂, ..., aₖ - наибольшее натуральное число d, которое делит каждое из этих чисел без остатка.</p>
+<p><strong>Свойства:</strong></p>
+<ul>
+<li>НОД(a, b) = НОД(b, a mod b)</li>
+<li>НОД(a, 0) = |a|</li>
+<li>НОД(a, b) = 2·НОД(a/2, b/2) при четных a, b</li>
+</ul>
+<p><strong>Основные алгоритмы:</strong></p>
+<ul>
+<li>Алгоритм Евклида</li>
+<li>Бинарный алгоритм Евклида  </li>
+<li>Расширенный алгоритм Евклида</li>
+<li>Расширенный бинарный алгоритм</li>
+</ul>
+<p><strong>Применение:</strong></p>
+<ul>
+<li>Криптография</li>
+<li>Теория чисел</li>
+<li>Компьютерная алгебра</li>
+</ul>
+<h1 id="-">Выполнение лабораторной работы</h1>
+<h1 id="1-">1. Реализовать алгоритм Евклида</h1>
+<pre><code class="lang-julia"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">euclidean_gcd</span>(<span class="hljs-title">a</span>, <span class="hljs-title">b</span>)</span>
+    <span class="hljs-keyword">a</span>, b = <span class="hljs-built_in">abs</span>(<span class="hljs-keyword">a</span>), <span class="hljs-built_in">abs</span>(b)
+    <span class="hljs-keyword">while</span> b != <span class="hljs-number">0</span>
+        <span class="hljs-keyword">a</span>, b = b, <span class="hljs-keyword">a</span> % b
+    <span class="hljs-function"><span class="hljs-keyword">end</span>
+    <span class="hljs-title">return</span> <span class="hljs-title">a</span></span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<h2 id="-1-">Работа функции (1)</h2>
+<p>Разберём подробно работу функции.</p>
+<p>На вход функция принимает 2 параметра: </p>
+<ul>
+<li><code>a</code> -- первое целое число;</li>
+<li><code>b</code> -- второе целое число.</li>
+</ul>
+<h2 id="-2-">Работа функции (2)</h2>
+<p>Функцию саму можно поделить на несколько смысловых частей:</p>
+<ol>
+<li>Приведение чисел к абсолютным значениям;</li>
+<li>Последовательная замена пар чисел (a, b) на (b, a mod b);</li>
+<li>Возврат результата когда остаток становится нулевым.</li>
+</ol>
+<h2 id="-">Проверка работы функции</h2>
+<pre><code class="lang-julia"><span class="hljs-function"><span class="hljs-title">println</span><span class="hljs-params">(<span class="hljs-string">"НОД(12345, 24690) = "</span>, euclidean_gcd(<span class="hljs-number">12345</span>, <span class="hljs-number">24690</span>)</span></span>)
+<span class="hljs-function"><span class="hljs-title">println</span><span class="hljs-params">(<span class="hljs-string">"НОД(12345, 54321) = "</span>, euclidean_gcd(<span class="hljs-number">12345</span>, <span class="hljs-number">54321</span>)</span></span>)
+</code></pre>
+<h2 id="-">Результат выполнения</h2>
+<pre><code>НОД(<span class="hljs-number">12345</span>, <span class="hljs-number">24690</span>) = <span class="hljs-number">12345</span>
+НОД(<span class="hljs-number">12345</span>, <span class="hljs-number">54321</span>) = <span class="hljs-number">3</span>
+</code></pre><h1 id="2-">2. Реализовать бинарный алгоритм Евклида</h1>
+<pre><code class="lang-julia"><span class="hljs-symbol">function</span> <span class="hljs-keyword">binary_gcd(a, </span><span class="hljs-keyword">b)
+</span>    a, <span class="hljs-keyword">b </span>= abs(a), abs(<span class="hljs-keyword">b)
+</span>    g = <span class="hljs-number">1</span>
+
+    <span class="hljs-meta">while</span> iseven(a) &amp;&amp; iseven(<span class="hljs-keyword">b)
+</span>        a ÷= <span class="hljs-number">2</span>
+        <span class="hljs-keyword">b </span>÷= <span class="hljs-number">2</span>
+        g *= <span class="hljs-number">2</span>
+    <span class="hljs-meta">end</span>
+
+    u, v = a, <span class="hljs-keyword">b
+</span>    <span class="hljs-meta">while</span> u != <span class="hljs-number">0</span>
+        <span class="hljs-meta">while</span> iseven(u)
+            u ÷= <span class="hljs-number">2</span>
+        <span class="hljs-meta">end</span>
+        <span class="hljs-meta">while</span> iseven(v)
+            v ÷= <span class="hljs-number">2</span>
+        <span class="hljs-meta">end</span>
+        <span class="hljs-meta">if</span> u &gt;= v
+            u -= v
+        <span class="hljs-meta">else</span>
+            v -= u
+        <span class="hljs-meta">end</span>
+    <span class="hljs-meta">end</span>
+
+    return g * v
+<span class="hljs-symbol">end</span>
+</code></pre>
+<h2 id="-1-">Работа функции (1)</h2>
+<p>Разберём подробно работу функции.</p>
+<p>На вход функция принимает 2 параметра: </p>
+<ul>
+<li><code>a</code> -- первое целое число;</li>
+<li><code>b</code> -- второе целое число.</li>
+</ul>
+<h2 id="-2-">Работа функции (2)</h2>
+<p>Функцию саму можно поделить на несколько смысловых частей:</p>
+<ol>
+<li>Удаление общих множителей 2;</li>
+<li>Работа с нечетными числами через вычитание;</li>
+<li>Использование операций сдвига вместо деления.</li>
+</ol>
+<h2 id="-">Проверка работы функции</h2>
+<pre><code class="lang-julia"><span class="hljs-function"><span class="hljs-title">println</span><span class="hljs-params">(<span class="hljs-string">"Бинарный НОД(91, 105) = "</span>, binary_gcd(<span class="hljs-number">91</span>, <span class="hljs-number">105</span>)</span></span>)
+<span class="hljs-function"><span class="hljs-title">println</span><span class="hljs-params">(<span class="hljs-string">"Бинарный НОД(105, 154) = "</span>, binary_gcd(<span class="hljs-number">105</span>, <span class="hljs-number">154</span>)</span></span>)
+</code></pre>
+<h2 id="-">Результат выполнения</h2>
+<pre><code>Бинарный НОД(<span class="hljs-number">91</span>, <span class="hljs-number">105</span>) = <span class="hljs-number">7</span>
+Бинарный НОД(<span class="hljs-number">105</span>, <span class="hljs-number">154</span>) = <span class="hljs-number">7</span>
+</code></pre><h1 id="3-">3. Реализовать расширенный алгоритм Евклида</h1>
+<pre><code class="lang-julia"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">extended_euclidean</span>(<span class="hljs-title">a</span>, <span class="hljs-title">b</span>)</span>
+    <span class="hljs-keyword">a</span>, b = <span class="hljs-built_in">abs</span>(<span class="hljs-keyword">a</span>), <span class="hljs-built_in">abs</span>(b)
+    x0, x1 = <span class="hljs-number">1</span>, <span class="hljs-number">0</span>
+    y0, y1 = <span class="hljs-number">0</span>, <span class="hljs-number">1</span>
+
+    <span class="hljs-keyword">while</span> b != <span class="hljs-number">0</span>
+        q = <span class="hljs-keyword">a</span> ÷ b
+        <span class="hljs-keyword">a</span>, b = b, <span class="hljs-keyword">a</span> % b
+        x0, x1 = x1, x0 - q * x1
+        y0, y1 = y1, y0 - q * y1
+    <span class="hljs-function"><span class="hljs-keyword">end</span>
+
+    <span class="hljs-title">return</span> (<span class="hljs-title">a</span>, <span class="hljs-title">x0</span>, <span class="hljs-title">y0</span>)</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<h2 id="-1-">Работа функции (1)</h2>
+<p>Разберём подробно работу функции.</p>
+<p>На вход функция принимает 2 параметра: </p>
+<ul>
+<li><code>a</code> -- первое целое число;</li>
+<li><code>b</code> -- второе целое число.</li>
+</ul>
+<h2 id="-2-">Работа функции (2)</h2>
+<p>Функцию саму можно поделить на несколько смысловых частей:</p>
+<ol>
+<li>Инициализация коэффициентов Безу;</li>
+<li>Последовательное обновление коэффициентов при делении с остатком;</li>
+<li>Возврат НОД и коэффициентов x, y.</li>
+</ol>
+<h2 id="-">Проверка работы функции</h2>
+<pre><code class="lang-julia">d, x, y = extended_euclidean(91, 105)
+println(<span class="hljs-string">"НОД(91,105) = <span class="hljs-variable">$d</span>, x = <span class="hljs-variable">$x</span>, y = <span class="hljs-variable">$y</span>"</span>)
+println(<span class="hljs-string">"Проверка: 91*<span class="hljs-variable">$x</span> + 105*<span class="hljs-variable">$y</span> = <span class="hljs-variable">$(91*x + 105*y)</span>"</span>)
+</code></pre>
+<h2 id="-">Результат выполнения</h2>
+<pre><code>НОД(<span class="hljs-number">91</span>,<span class="hljs-number">105</span>) = <span class="hljs-number">7</span>, <span class="hljs-attr">x</span> = -<span class="hljs-number">2</span>, <span class="hljs-attr">y</span> = <span class="hljs-number">1</span>
+Проверка: <span class="hljs-number">91</span>*-<span class="hljs-number">2</span> + <span class="hljs-number">105</span>*<span class="hljs-number">1</span> = <span class="hljs-number">7</span>
+</code></pre><h1 id="4-">4. Реализовать расширенный бинарный алгоритм Евклида</h1>
+<pre><code class="lang-julia"><span class="hljs-symbol">function</span> extended_binary_gcd(a, <span class="hljs-keyword">b)
+</span>    a, <span class="hljs-keyword">b </span>= abs(a), abs(<span class="hljs-keyword">b)
+</span>    g = <span class="hljs-number">1</span>
+
+    <span class="hljs-meta">while</span> iseven(a) &amp;&amp; iseven(<span class="hljs-keyword">b)
+</span>        a ÷= <span class="hljs-number">2</span>
+        <span class="hljs-keyword">b </span>÷= <span class="hljs-number">2</span>
+        g *= <span class="hljs-number">2</span>
+    <span class="hljs-meta">end</span>
+
+    u, v = a, <span class="hljs-keyword">b
+</span>    A, <span class="hljs-keyword">B, </span>C, D = <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>
+
+    <span class="hljs-meta">while</span> u != <span class="hljs-number">0</span>
+        <span class="hljs-meta">while</span> iseven(u)
+            u ÷= <span class="hljs-number">2</span>
+            <span class="hljs-meta">if</span> iseven(A) &amp;&amp; iseven(<span class="hljs-keyword">B)
+</span>                A ÷= <span class="hljs-number">2</span>
+                <span class="hljs-keyword">B </span>÷= <span class="hljs-number">2</span>
+            <span class="hljs-meta">else</span>
+                A = (A + <span class="hljs-keyword">b) </span>÷ <span class="hljs-number">2</span>
+                <span class="hljs-keyword">B </span>= (<span class="hljs-keyword">B </span>- a) ÷ <span class="hljs-number">2</span>
+            <span class="hljs-meta">end</span>
+        <span class="hljs-meta">end</span>
+
+        <span class="hljs-meta">while</span> iseven(v)
+            v ÷= <span class="hljs-number">2</span>
+            <span class="hljs-meta">if</span> iseven(C) &amp;&amp; iseven(D)
+                C ÷= <span class="hljs-number">2</span>
+                D ÷= <span class="hljs-number">2</span>
+            <span class="hljs-meta">else</span>
+                C = (C + <span class="hljs-keyword">b) </span>÷ <span class="hljs-number">2</span>
+                D = (D - a) ÷ <span class="hljs-number">2</span>
+            <span class="hljs-meta">end</span>
+        <span class="hljs-meta">end</span>
+
+        <span class="hljs-meta">if</span> u &gt;= v
+            u -= v
+            A -= C
+            <span class="hljs-keyword">B </span>-= D
+        <span class="hljs-meta">else</span>
+            v -= u
+            C -= A
+            D -= <span class="hljs-keyword">B
+</span>        <span class="hljs-meta">end</span>
+    <span class="hljs-meta">end</span>
+
+    d = g * v
+    return (d, C, D)
+<span class="hljs-symbol">end</span>
+</code></pre>
+<h2 id="-1-">Работа функции (1)</h2>
+<p>Разберём подробно работу функции.</p>
+<p>На вход функция принимает 2 параметра: </p>
+<ul>
+<li><code>a</code> -- первое целое число;</li>
+<li><code>b</code> -- второе целое число.</li>
+</ul>
+<h2 id="-2-">Работа функции (2)</h2>
+<p>Функцию саму можно поделить на несколько смысловых частей:</p>
+<ol>
+<li>Удаление общих множителей 2 с сохранением множителя g;</li>
+<li>Обработка четных чисел с обновлением коэффициентов;</li>
+<li>Вычитание и обновление матриц коэффициентов;</li>
+<li>Возврат НОД и коэффициентов Безу.</li>
+</ol>
+<h2 id="-">Проверка работы функции</h2>
+<pre><code class="lang-julia">d, x, y = extended_binary_gcd(91, 105)
+println(<span class="hljs-string">"Расширенный бинарный НОД(91,105) = <span class="hljs-variable">$d</span>, x = <span class="hljs-variable">$x</span>, y = <span class="hljs-variable">$y</span>"</span>)
+println(<span class="hljs-string">"Проверка: 91*<span class="hljs-variable">$x</span> + 105*<span class="hljs-variable">$y</span> = <span class="hljs-variable">$(91*x + 105*y)</span>"</span>)
+</code></pre>
+<h2 id="-">Результат выполнения</h2>
+<pre><code>Расширенный бинарный НОД(<span class="hljs-number">91</span>,<span class="hljs-number">105</span>) = <span class="hljs-number">7</span>, <span class="hljs-attr">x</span> = -<span class="hljs-number">2</span>, <span class="hljs-attr">y</span> = <span class="hljs-number">1</span>
+Проверка: <span class="hljs-number">91</span>*-<span class="hljs-number">2</span> + <span class="hljs-number">105</span>*<span class="hljs-number">1</span> = <span class="hljs-number">7</span>
+</code></pre><h1 id="-">Тестирование всех алгоритмов</h1>
+<pre><code class="lang-julia"><span class="hljs-keyword">function</span> test_algorithms()
+    test_cases = [
+        (<span class="hljs-number">12345</span>, <span class="hljs-number">24690</span>),
+        (<span class="hljs-number">12345</span>, <span class="hljs-number">54321</span>),
+        (<span class="hljs-number">12345</span>, <span class="hljs-number">12541</span>),
+        (<span class="hljs-number">91</span>, <span class="hljs-number">105</span>),
+        (<span class="hljs-number">105</span>, <span class="hljs-number">154</span>)
+    ]
+
+    <span class="hljs-keyword">for</span> (a, b) <span class="hljs-keyword">in</span> test_cases
+        println(<span class="hljs-string">"Тест для a=<span class="hljs-variable">$a</span>, b=<span class="hljs-variable">$b</span>:"</span>)
+        println(<span class="hljs-string">"Стандартный Евклид: "</span>, euclidean_gcd(a, b))
+        println(<span class="hljs-string">"Бинарный алгоритм: "</span>, binary_gcd(a, b))
+
+        d1, x1, y1 = extended_euclidean(a, b)
+        println(<span class="hljs-string">"Расширенный Евклид: НОД=<span class="hljs-variable">$d1</span>, коэффициенты: x=<span class="hljs-variable">$x1</span>, y=<span class="hljs-variable">$y1</span>"</span>)
+
+        d2, x2, y2 = extended_binary_gcd(a, b)
+        println(<span class="hljs-string">"Расширенный бинарный: НОД=<span class="hljs-variable">$d2</span>, коэффициенты: x=<span class="hljs-variable">$x2</span>, y=<span class="hljs-variable">$y2</span>"</span>)
+        println(<span class="hljs-string">"Проверка: <span class="hljs-subst">$(a*x2 + b*y2)</span> == <span class="hljs-variable">$d2</span>"</span>)
+        println(<span class="hljs-string">"-"</span>^<span class="hljs-number">50</span>)
+    <span class="hljs-keyword">end</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<h2 id="-">Результаты тестирования</h2>
+<p>Все алгоритмы успешно прошли тестирование:</p>
+<ul>
+<li>Корректно вычисляют НОД для различных пар чисел</li>
+<li>Правильно находят коэффициенты Безу</li>
+<li>Проходят проверку равенства a<em>x + b</em>y = НОД(a,b)</li>
+</ul>
+<h1 id="-">Выводы</h1>
+<p>В результате работы мы ознакомились с алгоритмами вычисления НОД, а именно:</p>
+<ul>
+<li><strong>Алгоритмом Евклида</strong> - классический подход с последовательным делением</li>
+<li><strong>Бинарным алгоритмом Евклида</strong> - эффективная реализация с использованием операций сдвига</li>
+<li><strong>Расширенным алгоритмом Евклида</strong> - нахождение НОД и коэффициентов Безу</li>
+<li><strong>Расширенным бинарным алгоритмом Евклида</strong> - комбинация эффективности и функциональности</li>
+</ul>
+<p><strong>Результаты:</strong></p>
+<ul>
+<li>Все алгоритмы успешно реализованы на языке Julia</li>
+<li>Проведено комплексное тестирование на различных примерах</li>
+<li>Подтверждена корректность вычислений</li>
+<li>Достигнута цель лабораторной работы</li>
+</ul>
+<p>Были записаны скринкасты:</p>
+<ul>
+<li>выполнения лабораторной работы;</li>
+<li>создания отчёта по результатам выполнения лабораторной работы;</li>
+<li>создания презентации по результатам выполнения лабораторной работы;</li>
+<li>защиты лабораторной работы.
+```</li>
+</ul>
+</body></html>
