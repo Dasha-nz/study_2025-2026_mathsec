@@ -422,11 +422,10 @@ test_algorithms()
 
 На RuTube:
 
-- [Весь плейлист]()
-- [Выполнения лабораторной работы]()
-- [Запись отчёта]()
-- [Запись презентации]()
-- [Защита лабораторной работы]()
+- [Выполнения лабораторной работы](https://rutube.ru/video/private/06d43edf1724f393e91edd70d1eb0855/?p=EMP_m5__4Xy7P1dau3170Q)
+- [Запись отчёта](https://rutube.ru/video/private/f4a4d0b26b877fbcb6564c71c403ed9d/?p=8JW-Z9OBVIBnQbH2NsT9Kg)
+- [Запись презентации](https://rutube.ru/video/private/5245a06947973edd2c5e5de8dcc1e44d/?p=tpe2NFsS58nJ_b5tnpWG2A)
+- [Защита лабораторной работы](https://rutube.ru/video/private/4e60885c69aeb11445c968b667964d8b/?p=KlKt6o0UqZZCs3fBtK6YnA)
 
 На Платформе:
 
