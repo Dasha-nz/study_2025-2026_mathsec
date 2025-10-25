@@ -429,7 +429,6 @@ test_algorithms()
 
 На Платформе:
 
-- [Весь плейлист]()
 - [Лабораторная работа]()
-- [Отчёт]()
-- [Презентация]()
+- [Отчёт](https://github.com/Dasha-nz/study_2025-2026_mathsec/blob/b29f6b68ad38ef3a49496feca87a72f150b88555/template/labs/labs_4/report/otch.md)
+- [Презентация](https://github.com/Dasha-nz/study_2025-2026_mathsec/blob/b29f6b68ad38ef3a49496feca87a72f150b88555/template/labs/labs_4/presentation/presentation.md)
