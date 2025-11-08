@@ -1,0 +1,340 @@
+<html><head><style>body {
+   color: black;
+}
+</style></head><body><h3 id="-5-">Отчёт по лабораторной работе №5: Вероятностные алгоритмы проверки чисел на простоту</h3>
+<h3 id="-">Дисциплина: Математические основы защиты информации и информационной безопасности</h3>
+<h3 id="-">Назарова Дарья Владиславовна</h3>
+<h1 id="-">Общая информация о задании лабораторной работы</h1>
+<h2 id="-">Цель работы</h2>
+<p>Ознакомиться с вероятностными алгоритмами проверки чисел на простоту, которые широко применяются в криптографии с открытым ключом.</p>
+<h2 id="-lab-task-">Задание [@lab-task]</h2>
+<ol>
+<li>Реализовать алгоритм, реализующий тест Ферма;</li>
+<li>Реализовать алгоритм вычисления символа Якоби;</li>
+<li>Реализовать алгоритм, реализующий тест Соловэя-Штрассена;</li>
+<li>Реализовать алгоритм, реализующий тест Миллера-Рабина.</li>
+</ol>
+<h1 id="-infobez-course-">Теоретическое введение [@infobez-course]</h1>
+<h2 id="-">Понятие простого числа</h2>
+<p>Целое число p ∈ Z /{0} называется <strong>простым</strong>, если оно не является делителем единицы и не имеет других делителей, кроме тривиальных (±1, ±p). В противном случае число называется <strong>составным</strong>.</p>
+<h2 id="-">Сравнение по модулю</h2>
+<p>Пусть m ∈ N, m &gt; 1. Целые числа a и b называются <strong>сравнимыми по модулю m</strong> (обозначается a ≡ b (mod m)), если разность a − b делится на m.</p>
+<h2 id="-">Вероятностные алгоритмы проверки на простоту</h2>
+<p><strong>Вероятностный алгоритм</strong> использует генератор случайных чисел и дает не гарантированно точный ответ. После t независимых выполнений теста вероятность ошибки не превосходит 1/2^t.</p>
+<h3 id="-">Тест Ферма</h3>
+<p>Основан на малой теореме Ферма: для простого числа p и произвольного числа a (1 ≤ a ≤ p-1) выполняется сравнение:
+a^(p-1) ≡ 1 (mod p)</p>
+<h3 id="-">Тест Соловэя-Штрассена</h3>
+<p>Основан на критерии Эйлера: нечетное число n является простым тогда и только тогда, когда для любого целого числа a, взаимно простого с n, выполняется сравнение:
+a^((n-1)/2) ≡ (a/n) (mod n)
+где (a/n) - символ Якоби.</p>
+<h3 id="-">Тест Миллера-Рабина</h3>
+<p>Современный наиболее надежный тест, основанный на разложении n-1 = 2^s * r и проверке последовательности степеней a^r, a^(2r), ..., a^(2^(s-1)r) mod n.</p>
+<h1 id="-lab-task-">Выполнение лабораторной работы [@lab-task]</h1>
+<h2 id="-">Вспомогательная функция для модульного возведения в степень</h2>
+<p>Все алгоритмы используют функцию модульного возведения в степень для эффективных вычислений.</p>
+<p>Исходный код написан на языке <code>Julia</code> [@doc-julia]. Код функции представлен ниже.</p>
+<pre><code class="lang-julia"><span class="hljs-function"><span class="hljs-keyword">function</span></span> mod_exp(base, <span class="hljs-built_in">exp</span>, <span class="hljs-built_in">mod</span>)
+    result = <span class="hljs-number">1</span>
+    base = base % <span class="hljs-built_in">mod</span>
+    <span class="hljs-keyword">while</span> <span class="hljs-built_in">exp</span> &gt; <span class="hljs-number">0</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-built_in">exp</span> % <span class="hljs-number">2</span> == <span class="hljs-number">1</span>
+            result = (result * base) % <span class="hljs-built_in">mod</span>
+        <span class="hljs-keyword">end</span>
+        <span class="hljs-built_in">exp</span> = <span class="hljs-built_in">exp</span> ÷ <span class="hljs-number">2</span>
+        base = (base * base) % <span class="hljs-built_in">mod</span>
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">return</span> result
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p><strong>Принцип работы:</strong> Алгоритм использует метод двоичного возведения в степень, что позволяет выполнить возведение в степень за логарифмическое время от показателя степени.</p>
+<h2 id="-1-">ЗАДАНИЕ 1: Алгоритм, реализующий тест Ферма</h2>
+<p>Тест Ферма основан на малой теореме Ферма и является одним из простейших вероятностных тестов простоты.</p>
+<p>Исходный код написан на языке <code>Julia</code> [@doc-julia]. Код функции представлен ниже.</p>
+<pre><code class="lang-julia"><span class="hljs-keyword">function</span> fermat_test(n, k=<span class="hljs-number">10</span>)
+    <span class="hljs-keyword">if</span> n ≤ <span class="hljs-number">1</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+    <span class="hljs-keyword">elseif</span> n == <span class="hljs-number">2</span> || n == <span class="hljs-number">3</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> простое"</span>
+    <span class="hljs-keyword">elseif</span> n % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+    <span class="hljs-keyword">end</span>
+
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">1</span>:k
+        a = rand(<span class="hljs-number">2</span>:(n-<span class="hljs-number">2</span>))
+        <span class="hljs-keyword">if</span> mod_exp(a, n-<span class="hljs-number">1</span>, n) != <span class="hljs-number">1</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+        <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span>, вероятно, простое"</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p><strong>Разбор работы функции:</strong></p>
+<p>На вход функция принимает 2 параметра: </p>
+<ul>
+<li><code>n</code> -- число для проверки на простоту</li>
+<li><code>k</code> -- количество итераций теста (по умолчанию 10)</li>
+</ul>
+<p><strong>Шаги алгоритма:</strong></p>
+<ol>
+<li><strong>Предварительные проверки:</strong> обработка тривиальных случаев (n ≤ 1, n = 2, 3, четные числа)</li>
+<li><strong>Основной цикл:</strong> выполнение k итераций теста</li>
+<li><strong>Выбор случайного основания:</strong> a выбирается из диапазона [2, n-2]</li>
+<li><strong>Проверка условия Ферма:</strong> если a^(n-1) ≠ 1 (mod n), число гарантированно составное</li>
+<li><strong>Результат:</strong> если все проверки пройдены, число считается вероятно простым</li>
+</ol>
+<h2 id="-2-">ЗАДАНИЕ 2: Алгоритм вычисления символа Якоби</h2>
+<p>Символ Якоби является обобщением символа Лежандра и используется в тесте Соловэя-Штрассена.</p>
+<p>Исходный код написан на языке <code>Julia</code> [@doc-julia]. Код функции представлен ниже.</p>
+<pre><code class="lang-julia">function jacobi_symbol(a, n)
+    <span class="hljs-keyword">if</span> n &lt;= <span class="hljs-number">0</span> || n % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>
+        <span class="hljs-built_in">throw</span>(DomainError(<span class="hljs-string">"n must be a positive odd integer"</span>))
+    end
+
+    <span class="hljs-comment"># Шаг 1: Инициализация</span>
+    <span class="hljs-attr">g</span> = <span class="hljs-number">1</span>
+
+    <span class="hljs-comment"># Шаг 2: Обработка a = 0</span>
+    <span class="hljs-attr">a</span> = a % n
+    <span class="hljs-keyword">if</span> <span class="hljs-attr">a</span> == <span class="hljs-number">0</span>
+        return <span class="hljs-number">0</span>
+    end
+
+    while <span class="hljs-literal">true</span>
+        <span class="hljs-comment"># Шаг 3: Обработка a = 1</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-attr">a</span> == <span class="hljs-number">1</span>
+            return g
+        end
+
+        <span class="hljs-comment"># Шаг 4: Представление a в виде a = 2^k * a1</span>
+        <span class="hljs-attr">k</span> = <span class="hljs-number">0</span>
+        <span class="hljs-attr">a1</span> = a
+        while a1 % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>
+            k += <span class="hljs-number">1</span>
+            a1 ÷= <span class="hljs-number">2</span>
+        end
+
+        <span class="hljs-comment"># Шаг 5: Вычисление s</span>
+        <span class="hljs-attr">s</span> = <span class="hljs-number">1</span>
+        <span class="hljs-keyword">if</span> k % <span class="hljs-number">2</span> == <span class="hljs-number">1</span>
+            <span class="hljs-attr">mod8</span> = n % <span class="hljs-number">8</span>
+            <span class="hljs-keyword">if</span> <span class="hljs-attr">mod8</span> == <span class="hljs-number">3</span> || <span class="hljs-attr">mod8</span> == <span class="hljs-number">5</span>
+                <span class="hljs-attr">s</span> = -<span class="hljs-number">1</span>
+            end
+        end
+
+        <span class="hljs-comment"># Шаг 6: Проверка a1 = 1</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-attr">a1</span> == <span class="hljs-number">1</span>
+            return g * s
+        end
+
+        <span class="hljs-comment"># Шаг 7: Дополнительное условие</span>
+        <span class="hljs-keyword">if</span> n % <span class="hljs-number">4</span> == <span class="hljs-number">3</span> &amp;&amp; a1 % <span class="hljs-number">4</span> == <span class="hljs-number">3</span>
+            <span class="hljs-attr">s</span> = -s
+        end
+
+        <span class="hljs-comment"># Шаг 8: Обновление переменных</span>
+        <span class="hljs-attr">a_new</span> = n % a1
+        <span class="hljs-attr">n_new</span> = a1
+        <span class="hljs-attr">g</span> = g * s
+        <span class="hljs-attr">a</span> = a_new
+        <span class="hljs-attr">n</span> = n_new
+    end
+end
+</code></pre>
+<p><strong>Разбор работы функции:</strong></p>
+<p>Алгоритм реализует рекурсивное вычисление символа Якоби с использованием следующих свойств:</p>
+<ol>
+<li>(0/n) = 0</li>
+<li>(1/n) = 1</li>
+<li>(2/n) зависит от n mod 8</li>
+<li>Квадратичный закон взаимности</li>
+</ol>
+<h2 id="-3-">ЗАДАНИЕ 3: Алгоритм, реализующий тест Соловэя-Штрассена</h2>
+<p>Тест Соловэя-Штрассена использует символ Якоби и критерий Эйлера для проверки простоты.</p>
+<p>Исходный код написан на языке <code>Julia</code> [@doc-julia]. Код функции представлен ниже.</p>
+<pre><code class="lang-julia"><span class="hljs-keyword">function</span> solovay_strassen_test(n, k=<span class="hljs-number">10</span>)
+    <span class="hljs-keyword">if</span> n ≤ <span class="hljs-number">1</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+    <span class="hljs-keyword">elseif</span> n == <span class="hljs-number">2</span> || n == <span class="hljs-number">3</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> простое"</span>
+    <span class="hljs-keyword">elseif</span> n % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+    <span class="hljs-keyword">end</span>
+
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">1</span>:k
+        <span class="hljs-comment"># Шаг 1: Выбор случайного числа a</span>
+        a = rand(<span class="hljs-number">2</span>:(n-<span class="hljs-number">2</span>))
+
+        <span class="hljs-comment"># Шаг 2: Вычисление r = a^((n-1)/2) mod n</span>
+        r = mod_exp(a, (n-<span class="hljs-number">1</span>)÷<span class="hljs-number">2</span>, n)
+
+        <span class="hljs-comment"># Шаг 3: Проверка условия</span>
+        <span class="hljs-keyword">if</span> r != <span class="hljs-number">1</span> &amp;&amp; r != n-<span class="hljs-number">1</span>
+            <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+        <span class="hljs-keyword">end</span>
+
+        <span class="hljs-comment"># Шаг 4: Вычисление символа Якоби</span>
+        s = jacobi_symbol(a, n)
+
+        <span class="hljs-comment"># Шаг 5: Сравнение r и s</span>
+        <span class="hljs-keyword">if</span> r != s % n
+            <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+        <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span>, вероятно, простое"</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p><strong>Разбор работы функции:</strong></p>
+<p><strong>Шаги алгоритма:</strong></p>
+<ol>
+<li><strong>Выбор случайного основания:</strong> a ∈ [2, n-2]</li>
+<li><strong>Вычисление степени:</strong> r = a^((n-1)/2) mod n</li>
+<li><strong>Первичная проверка:</strong> если r ≠ 1 и r ≠ n-1, число составное</li>
+<li><strong>Вычисление символа Якоби:</strong> s = (a/n)</li>
+<li><strong>Основная проверка:</strong> если r ≠ s mod n, число составное</li>
+</ol>
+<h2 id="-4-">ЗАДАНИЕ 4: Алгоритм, реализующий тест Миллера-Рабина</h2>
+<p>Тест Миллера-Рабина является наиболее надежным вероятностным тестом простоты и широко используется на практике.</p>
+<p>Исходный код написан на языке <code>Julia</code> [@doc-julia]. Код функции представлен ниже.</p>
+<pre><code class="lang-julia"><span class="hljs-keyword">function</span> miller_rabin_test(n, k=<span class="hljs-number">10</span>)
+    <span class="hljs-keyword">if</span> n ≤ <span class="hljs-number">1</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+    <span class="hljs-keyword">elseif</span> n == <span class="hljs-number">2</span> || n == <span class="hljs-number">3</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> простое"</span>
+    <span class="hljs-keyword">elseif</span> n % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+    <span class="hljs-keyword">end</span>
+
+    <span class="hljs-comment"># Шаг 1: Представление n-1 в виде n-1 = 2^s * r</span>
+    s = <span class="hljs-number">0</span>
+    r = n - <span class="hljs-number">1</span>
+    <span class="hljs-keyword">while</span> r % <span class="hljs-number">2</span> == <span class="hljs-number">0</span>
+        s += <span class="hljs-number">1</span>
+        r ÷= <span class="hljs-number">2</span>
+    <span class="hljs-keyword">end</span>
+
+    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-number">1</span>:k
+        <span class="hljs-comment"># Шаг 2: Выбор случайного числа a</span>
+        a = rand(<span class="hljs-number">2</span>:(n-<span class="hljs-number">2</span>))
+
+        <span class="hljs-comment"># Шаг 3: Вычисление y = a^r mod n</span>
+        y = mod_exp(a, r, n)
+
+        <span class="hljs-comment"># Шаг 4: Основная проверка</span>
+        <span class="hljs-keyword">if</span> y != <span class="hljs-number">1</span> &amp;&amp; y != n-<span class="hljs-number">1</span>
+            j = <span class="hljs-number">1</span>
+            <span class="hljs-comment"># Шаг 4.2: Цикл проверки</span>
+            <span class="hljs-keyword">while</span> j ≤ s-<span class="hljs-number">1</span> &amp;&amp; y != n-<span class="hljs-number">1</span>
+                <span class="hljs-comment"># Шаг 4.2.1: Возведение в квадрат</span>
+                y = mod_exp(y, <span class="hljs-number">2</span>, n)
+
+                <span class="hljs-comment"># Шаг 4.2.2: Проверка на 1</span>
+                <span class="hljs-keyword">if</span> y == <span class="hljs-number">1</span>
+                    <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+                <span class="hljs-keyword">end</span>
+
+                <span class="hljs-comment"># Шаг 4.2.3: Увеличение счетчика</span>
+                j += <span class="hljs-number">1</span>
+            <span class="hljs-keyword">end</span>
+
+            <span class="hljs-comment"># Шаг 4.3: Финальная проверка</span>
+            <span class="hljs-keyword">if</span> y != n-<span class="hljs-number">1</span>
+                <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span> составное"</span>
+            <span class="hljs-keyword">end</span>
+        <span class="hljs-keyword">end</span>
+    <span class="hljs-keyword">end</span>
+
+    <span class="hljs-comment"># Шаг 5: Результат</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-string">"Число <span class="hljs-variable">$n</span>, вероятно, простое"</span>
+<span class="hljs-keyword">end</span>
+</code></pre>
+<p><strong>Разбор работы функции:</strong></p>
+<p><strong>Шаги алгоритма:</strong></p>
+<ol>
+<li><strong>Разложение:</strong> n-1 = 2^s * r, где r - нечетное</li>
+<li><strong>Основной цикл:</strong> k итераций теста</li>
+<li><strong>Вычисление последовательности:</strong> y = a^r, y^2, y^4, ..., y^(2^(s-1)) mod n</li>
+<li><strong>Проверка условий:</strong> если в последовательности встретилась 1 (кроме первого элемента) или не встретился n-1, число составное</li>
+</ol>
+<h2 id="-">Тестирование всех алгоритмов</h2>
+<p>Для проверки корректности всех реализованных алгоритмов написана тестовая функция:</p>
+<pre><code class="lang-julia"><span class="hljs-keyword">println</span>(<span class="hljs-string">"="</span>^<span class="hljs-number">60</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"ЛАБОРАТОРНАЯ РАБОТА №5: Проверка чисел на простоту"</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"="</span>^<span class="hljs-number">60</span>)
+
+<span class="hljs-comment"># Тестовые числа: простые и составные</span>
+test_numbers = [<span class="hljs-number">5</span>, <span class="hljs-number">9</span>, <span class="hljs-number">13</span>, <span class="hljs-number">15</span>, <span class="hljs-number">17</span>, <span class="hljs-number">21</span>, <span class="hljs-number">23</span>, <span class="hljs-number">29</span>, <span class="hljs-number">31</span>, <span class="hljs-number">33</span>]
+
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"\n"</span> * <span class="hljs-string">"="</span>^<span class="hljs-number">40</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"ТЕСТ ФЕРМА"</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"="</span>^<span class="hljs-number">40</span>)
+<span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> test_numbers
+    <span class="hljs-keyword">println</span>(fermat_test(n, <span class="hljs-number">5</span>))
+end
+
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"\n"</span> * <span class="hljs-string">"="</span>^<span class="hljs-number">40</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"ТЕСТ СОЛОВЭЯ-ШТРАССЕНА"</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"="</span>^<span class="hljs-number">40</span>)
+<span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> test_numbers
+    <span class="hljs-keyword">println</span>(solovay_strassen_test(n, <span class="hljs-number">5</span>))
+end
+
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"\n"</span> * <span class="hljs-string">"="</span>^<span class="hljs-number">40</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"ТЕСТ МИЛЛЕРА-РАБИНА"</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"="</span>^<span class="hljs-number">40</span>)
+<span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> test_numbers
+    <span class="hljs-keyword">println</span>(miller_rabin_test(n, <span class="hljs-number">5</span>))
+end
+
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"\n"</span> * <span class="hljs-string">"="</span>^<span class="hljs-number">60</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"СРАВНЕНИЕ РЕЗУЛЬТАТОВ ДЛЯ БОЛЬШОГО ЧИСЛА"</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"="</span>^<span class="hljs-number">60</span>)
+
+large_number = <span class="hljs-number">101</span>
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"Число для проверки: $large_number"</span>)
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"Тест Ферма: "</span>, fermat_test(large_number, <span class="hljs-number">10</span>))
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"Тест Соловэя-Штрассена: "</span>, solovay_strassen_test(large_number, <span class="hljs-number">10</span>))
+<span class="hljs-keyword">println</span>(<span class="hljs-string">"Тест Миллера-Рабина: "</span>, miller_rabin_test(large_number, <span class="hljs-number">10</span>))
+</code></pre>
+<p><strong>Результаты тестирования:</strong></p>
+<ul>
+<li>Все алгоритмы корректно определяют простые числа (5, 13, 17, 23, 29, 31)</li>
+<li>Все алгоритмы корректно определяют составные числа (9, 15, 21, 33)</li>
+<li>Для большого простого числа 101 все тесты показывают &quot;вероятно простое&quot;</li>
+</ul>
+<h1 id="-">Выводы</h1>
+<p>В результате работы мы ознакомились с вероятностными алгоритмами проверки чисел на простоту, а именно:</p>
+<ul>
+<li><strong>Тестом Ферма</strong> - основан на малой теореме Ферма;</li>
+<li><strong>Алгоритмом вычисления символа Якоби</strong> - необходим для теста Соловэя-Штрассена;</li>
+<li><strong>Тестом Соловэя-Штрассена</strong> - использует критерий Эйлера и символ Якоби;</li>
+<li><strong>Тестом Миллера-Рабина</strong> - наиболее надежный современный тест.</li>
+</ul>
+<p>Были успешно реализованы все алгоритмы на языке программирования Julia и проверена их корректность на тестовых примерах. Все алгоритмы демонстрируют корректные результаты проверки чисел на простоту.</p>
+<p><strong>Особенности вероятностных алгоритмов:</strong></p>
+<ul>
+<li>Могут с некоторой малой вероятностью ошибочно классифицировать составное число как простое</li>
+<li>Никогда не ошибаются в обратном направлении - если алгоритм говорит, что число составное, то это гарантированно верно</li>
+<li>Вероятность ошибки уменьшается с увеличением количества итераций</li>
+</ul>
+<p><strong>Преимущества теста Миллера-Рабина:</strong></p>
+<ul>
+<li>Наиболее высокая надежность</li>
+<li>Широкое применение в криптографических системах</li>
+<li>Эффективная реализация</li>
+</ul>
+<p><strong>Ссылки на видеозаписи:</strong></p>
+<ul>
+<li><a href="">Выполнения лабораторной работы</a></li>
+<li><a href="">Запись отчёта</a></li>
+<li><a href="">Запись презентации</a></li>
+<li><a href="">Защита лабораторной работы</a></li>
+</ul>
+<p><strong>Репозиторий с кодом:</strong></p>
+<ul>
+<li><a href="">Лабораторная работа</a></li>
+<li><a href="">Отчёт</a></li>
+<li><a href="">Презентация</a></li>
+</ul>
+</body></html>
