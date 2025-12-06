@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Converted from Markdown</title>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+      line-height: 1.6; 
+      max-width: 800px; 
+      margin: 0 auto; 
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2, h3 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.5em; }
+    h3 { font-size: 1.2em; }
+    code { 
+      background: #f4f4f4; 
+      padding: 2px 4px; 
+      border-radius: 3px; 
+      font-family: 'Courier New', monospace;
+    }
+    pre { 
+      background: #f4f4f4; 
+      padding: 15px; 
+      border-radius: 5px; 
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      line-height: 1.4;
+    }
+    blockquote { 
+      border-left: 4px solid #ddd; 
+      margin: 1em 0; 
+      padding-left: 20px; 
+      color: #666;
+      font-style: italic;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+    }
+    ul, ol {
+      margin: 1em 0;
+      padding-left: 2em;
+    }
+    li {
+      margin: 0.5em 0;
+    }
+  </style>
+</head>
+<body>
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/mvp.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+  <title>Page Title</title>
+  <meta name="description" content="">
+</head>
+
+<body>
+  <main>
+    <article>
+      <p>Лабораторная работа №7: Дискретное логарифмирование в конечном поле</p>
+<p>Реализация p-метода Полларда</p>
+<p>Студент: Назарова Дарья Владиславовна</p>
+<p>Группа: НПИмд01-24</p>
+<p>Содержание</p>
+<p>
+  Теоретические основы Постановка задачи Алгоритм Полларда Реализация на Julia
+  Примеры работы Выводы Приложения
+</p>
+<ol>
+  <li>Теоретические основы</li>
+</ol>
+<p>Конечные поля GF(p)</p>
+<p>
+  Определение: Множество $F_p = \mathbb{Z}/p\mathbb{Z}$ классов вычетов по
+  модулю простого числа $p$ является конечным полем из $p$ элементов.
+</p>
+<p>Свойства:</p>
+<p>
+  Существуют операции сложения и умножения Каждый ненулевой элемент имеет
+  обратный Мультипликативная группа циклическая Существуют генераторы
+  (первообразные корни) Дискретный логарифм
+</p>
+<p>Задача: Для заданных $a$, $b$ и простого $p$ найти $x$ такой, что:</p>
+<p>a x ≡ b ( m o d p ) a x ≡b(modp) Обозначение: $x = \log_a b \pmod{p}$</p>
+<p>Сложность:</p>
+<p>
+  Вычисление $a^x \mod p$: полиномиальная сложность Нахождение $x$ по $a^x \mod
+  p$: субэкспоненциальная сложность 2. Постановка задачи
+</p>
+<p>Цель работы</p>
+<p>
+  Изучить задачу дискретного логарифмирования в конечных полях Реализовать
+  p-метод Полларда Применить алгоритм для решения практических задач Исходные
+  данные
+</p>
+<p>
+  Простое число $p$ Основание $a$ (генератор мультипликативной группы) Число
+  $b$, для которого ищется логарифм Ожидаемый результат
+</p>
+<p>
+  Значение $x$, удовлетворяющее сравнению $a^x \equiv b \pmod{p}$ Программная
+  реализация алгоритма 3. Алгоритм Полларда
+</p>
+<p>Основная идея</p>
+<p>Метод "черепахи и зайца" (Floyd's cycle-finding):</p>
+<p>
+  Использует псевдослучайное блуждание Обнаруживает коллизии за $O(\sqrt{n})$
+  шагов Требует константной памяти Математическая модель
+</p>
+<p>Ветвящееся отображение:</p>
+<h1>f ( c )</h1>
+<p>{ a ⋅ c ( m o d p ) , если c &lt; p 2 b ⋅ c ( m o d p ) , если c ≥ p 2</p>
+<p>f(c)={ a⋅c(modp), b⋅c(modp), ​</p>
+<p>если c&lt; 2 p ​</p>
+<p>если c≥ 2 p ​</p>
+<p>​</p>
+<p>Свойства отображения:</p>
+<p>
+  Сжимающее: уменьшает пространство поиска Вычислимое: позволяет отслеживать
+  логарифмы Детерминированное: гарантирует повторяемость Шаги алгоритма
+</p>
+<p>Шаг 1: Инициализация</p>
+<p>
+  julia u, v ← случайные числа из [0, r-1] c ← a^u * b^v mod p d ← c α_c, β_c ←
+  u, v # log(c) = α + β*x α_d, β_d ← u, v Шаг 2: Поиск коллизии
+</p>
+<p>
+  julia while c ≠ d: c, α_c, β_c ← f(c, α_c, β_c) # один шаг d, α_d, β_d ← f(d,
+  α_d, β_d) # два шага d, α_d, β_d ← f(d, α_d, β_d) Шаг 3: Решение уравнения
+</p>
+<p>При $c = d$ получаем:</p>
+<p>
+  α c + β c x ≡ α d + β d x ( m o d r ) α c ​ +β c ​ x≡α d ​ +β d ​ x(modr)
+  Преобразуем к виду:
+</p>
+<p>
+  ( β c − β d ) x ≡ α d − α c ( m o d r ) (β c ​ −β d ​ )x≡α d ​ −α c ​ (modr)
+  Решаем линейное сравнение:
+</p>
+<p>A x ≡ B ( m o d r ) Ax≡B(modr)</p>
+
+<pre><code>&lt;/article&gt;
+</code></pre>
+  </main>
+</body>
+
+</html>
+</body>
+</html>

@@ -1,0 +1,381 @@
+
+      <html xmlns:o='urn:schemas-microsoft-com:office:office'
+            xmlns:w='urn:schemas-microsoft-com:office:word'
+            xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+          <meta charset="utf-8">
+          <title>Exported Document</title>
+          <style>
+              body { font-family: Arial, sans-serif; }
+          </style>
+      </head>
+      <body>
+          <h1 id="7">Лабораторная работа №7: Дискретное логарифмирование в конечном поле</h1>
+<h1 id="p">Реализация p-метода Полларда</h1>
+<h1 id="">Импортируем необходимые модули</h1>
+<p>using Printf
+using Random</p>
+<p>"""
+    pollard_rho_dlog(p, a, b; max_iter=10000)</p>
+<p>Алгоритм Полларда для дискретного логарифмирования в конечном поле GF(p).</p>
+<p>Аргументы:</p>
+<ul>
+<li><code>p</code>: простое число (модуль)</li>
+<li><code>a</code>: основание (генератор)</li>
+<li><code>b</code>: значение, для которого ищем логарифм</li>
+<li><code>max_iter</code>: максимальное число итераций</li>
+</ul>
+<p>Возвращает:</p>
+<ul>
+<li><p><code>x</code>: решение сравнения a^x ≡ b (mod p)</p></li>
+<li><p><code>nothing</code>: если решение не найдено
+"""
+function pollard_rho_dlog(p, a, b; max_iter=10000)</p>
+<h1 id="p-1">Проверяем простоту p (упрощённая проверка)</h1>
+<p>!isprime(p) &amp;&amp; error("p должно быть простым числом")</p>
+<h1 id="gfpp1">В конечном поле GF(p) порядок мультипликативной группы равен p-1</h1>
+<h1 id="ap1">Для a, являющегося генератором, порядок также равен p-1</h1>
+<p>r = p - 1</p>
+<p>"""
+Ветвящееся отображение f(c)
+Согласно алгоритму из лабораторной работы:</p>
+<ul>
+<li>При c &lt; p/2: умножаем на основание a</li>
+<li>При c ≥ p/2: умножаем на b</li></ul>
+<p>Также отслеживаем логарифмы как линейные функции: log(c) = alpha + beta<em>x
+"""
+function f(c, alpha, beta)
+    if c < p ÷ 2
+        # c → a</em>c mod p
+        # При умножении на a логарифм увеличивается на 1: log(a*c) = log(c) + 1
+        return (mod(c * a, p), mod(alpha + 1, r), beta)
+    else
+        # c → b<em>c mod p  
+        # При умножении на b логарифм увеличивается на x: log(b</em>c) = log(c) + x
+        # Поскольку b = a^x, то log(b) = x
+        return (mod(c * b, p), alpha, mod(beta + 1, r))
+    end
+end</p>
+<h1 id="1">Шаг 1: Инициализация</h1>
+<h1 id="uv">Выбираем случайные начальные значения для u и v</h1>
+<p>u = rand(0:r-1)
+v = rand(0:r-1)</p>
+<h1 id="caubvmodp">Вычисляем начальное значение c = a^u * b^v mod p</h1>
+<p>c = mod(powermod(a, u, p) * powermod(b, v, p), p)
+d = c  # Начинаем с того же значения</p>
+<h1 id="-4">Инициализируем коэффициенты для логарифмов:</h1>
+<h1 id="log_acalpha_cbeta_cx">log_a(c) = alpha_c + beta_c * x</h1>
+<h1 id="log_adalpha_dbeta_dx">log_a(d) = alpha_d + beta_d * x</h1>
+<p>alpha_c, beta_c = u, v
+alpha_d, beta_d = u, v</p>
+<h1 id="2">Шаг 2: Поиск коллизии методом "черепахи и зайца"</h1>
+<h1 id="cd">c делает один шаг на каждой итерации, d - два шага</h1>
+<p>for i in 1:max_iter
+    # Обновляем c (один шаг - "черепаха")
+    c, alpha_c, beta_c = f(c, alpha_c, beta_c)</p>
+<pre><code># Обновляем d (два шага - "заяц")
+d, alpha_d, beta_d = f(d, alpha_d, beta_d)
+d, alpha_d, beta_d = f(d, alpha_d, beta_d)
+
+# Проверяем коллизию (c == d mod p)
+if c == d
+    # Шаг 3: Решение сравнения<pre><code># Из равенства c = d получаем:
+# alpha_c + beta_c * x ≡ alpha_d + beta_d * x (mod r)
+# Преобразуем к виду: A*x ≡ B (mod r)
+A = mod(beta_c - beta_d, r)
+B = mod(alpha_d - alpha_c, r)
+
+# Находим НОД(A, r) для проверки разрешимости
+g = gcd(A, r)
+
+# Условие разрешимости: B должно делиться на g
+if B % g != 0
+    return nothing  # Нет решений
+end
+
+# Приводим сравнение к виду: (A/g)*x ≡ (B/g) (mod r/g)
+A_div = div(A, g)
+B_div = div(B, g)
+r_div = div(r, g)
+
+# Находим обратный элемент к A_div по модулю r_div
+inv = invmod(A_div, r_div)
+
+# Находим частное решение
+x0 = mod(B_div * inv, r_div)
+
+# Проверяем все возможные решения: x = x0 + k*(r/g), k = 0..g-1
+for k in 0:g-1
+    x = mod(x0 + k * r_div, r)
+    # Проверяем, является ли x решением
+    if powermod(a, x, p) == b
+        return x
+    end
+end
+
+return nothing  # Ни одно из возможных решений не подошло
+</code></pre>end
+</code></pre>
+<p>end</p>
+<p>return nothing  # Превышено максимальное число итераций
+end</p></li>
+</ul>
+<p>"""
+    solve_dlog_example()</p>
+<p>Решает пример из лабораторной работы: 10^x ≡ 64 (mod 107)
+Демонстрирует работу алгоритма на конкретном примере
+"""
+function solve_dlog_example()
+    p = 107
+    a = 10
+    b = 64</p>
+<pre><code>println("Решаем задачу: $a^x ≡ $b (mod $p)")
+println("Из лабораторной работы ожидаем x = 20")
+
+x = pollard_rho_dlog(p, a, b)
+
+if x !== nothing
+    println("Найдено решение: x = $x")
+    println("Проверка: $a^$x mod $p = $(powermod(a, x, p))")
+
+    if powermod(a, x, p) == b
+        println("✓ Проверка пройдена успешно!")
+    else
+        println("✗ Проверка не пройдена!")
+    end
+else
+    println("Решение не найдено")
+end
+</code></pre>
+<p>end</p>
+<p>"""
+    get_random_problem(bit_size=8)</p>
+<p>Генерирует случайную задачу дискретного логарифмирования.
+Используется для тестирования алгоритма.</p>
+<p>Аргументы:</p>
+<ul>
+<li><code>bit_size</code>: размер простого числа в битах</li>
+</ul>
+<p>Возвращает:</p>
+<ul>
+<li><p><code>p</code>: простое число</p></li>
+<li><p><code>a</code>: генератор поля</p></li>
+<li><p><code>b</code>: a^x mod p</p></li>
+<li><p><code>true_x</code>: истинное значение x (для проверки)
+"""
+function get_random_problem(bit_size=8)</p>
+<h1 id="-5">Находим простое число заданного размера</h1>
+<p>p = nextprime(rand(2^(bit_size-1):2^bit_size))</p>
+<h1 id="p-2">Находим первообразный корень по модулю p (генератор мультипликативной группы)</h1>
+<h1 id="p1">Генератор - это элемент порядка p-1</h1>
+<p>a = 2  # Начинаем проверку с 2
+while true
+    # Проверяем, что a взаимно просто с p и имеет максимальный порядок
+    if gcd(a, p) == 1 &amp;&amp; order_mod(a, p) == p-1
+        break
+    end
+    a += 1
+end</p>
+<h1 id="x">Выбираем случайный показатель x</h1>
+<p>x = rand(1:p-2)</p>
+<h1 id="baxmodp">Вычисляем b = a^x mod p</h1>
+<p>b = powermod(a, x, p)</p>
+<p>return p, a, b, x
+end</p></li>
+</ul>
+<p>"""
+    order_mod(a, p)</p>
+<p>Вычисляет порядок элемента a в мультипликативной группе по модулю p.
+Порядок - наименьшее натуральное r такое, что a^r ≡ 1 (mod p).</p>
+<p>Аргументы:</p>
+<ul>
+<li><code>a</code>: элемент группы</li>
+<li><code>p</code>: модуль</li>
+</ul>
+<p>Возвращает:</p>
+<ul>
+<li><code>r</code>: порядок элемента a
+"""
+function order_mod(a, p)
+for r in 1:p-1
+    if powermod(a, r, p) == 1
+        return r
+    end
+end
+return p-1
+end</li>
+</ul>
+<p>"""
+    isprime(n)</p>
+<p>Упрощённая проверка числа на простоту.
+В реальных приложениях следует использовать более эффективные алгоритмы.</p>
+<p>Аргументы:</p>
+<ul>
+<li><code>n</code>: проверяемое число</li>
+</ul>
+<p>Возвращает:</p>
+<ul>
+<li><p><code>true</code>: если число простое</p></li>
+<li><p><code>false</code>: если число составное
+"""
+function isprime(n)
+n &lt; 2 &amp;&amp; return false
+n == 2 &amp;&amp; return true
+n % 2 == 0 &amp;&amp; return false</p>
+<h1 id="-6">Проверяем делители до квадратного корня</h1>
+<p>limit = trunc(Int, sqrt(n))
+for i in 3:2:min(limit, 10000)
+    n % i == 0 &amp;&amp; return false
+end
+return true
+end</p></li>
+</ul>
+<p>"""
+    nextprime(n)</p>
+<p>Находит следующее простое число после n.</p>
+<p>Аргументы:</p>
+<ul>
+<li><code>n</code>: начальное число</li>
+</ul>
+<p>Возвращает:</p>
+<ul>
+<li><code>p</code>: первое простое число ≥ n
+"""
+function nextprime(n)
+n = n &lt; 2 ? 2 : n
+n % 2 == 0 &amp;&amp; (n += 1)
+while !isprime(n)
+    n += 2
+end
+return n
+end</li>
+</ul>
+<p>"""
+    main()</p>
+<p>Основная функция программы.
+Организует взаимодействие с пользователем и демонстрацию алгоритма.
+"""
+function main()
+    println("="^60)
+    println("ЛАБОРАТОРНАЯ РАБОТА №7")
+    println("Дискретное логарифмирование в конечном поле")
+    println("p-метод Полларда")
+    println("="^60)</p>
+<pre><code># Демонстрация работы на примере из лабораторной работы
+println("\n" * "="^40)
+println("1. ПРИМЕР ИЗ ЛАБОРАТОРНОЙ РАБОТЫ")
+println("="^40)
+solve_dlog_example()
+
+# Генерация и решение случайной задачи
+println("\n" * "="^40)
+println("2. СЛУЧАЙНАЯ ЗАДАЧА ДЛЯ ТЕСТИРОВАНИЯ")
+println("="^40)
+p, a, b, true_x = get_random_problem(8)
+println("Сгенерирована задача:")
+println("  p = $p (простое число)")
+println("  a = $a (генератор поля)")
+println("  b = $b")
+println("  Истинное значение x = $true_x")
+
+println("\nЗапуск алгоритма Полларда...")
+x = pollard_rho_dlog(p, a, b)
+
+if x !== nothing
+    println("\nРезультат:")
+    println("  Найденное решение: x = $x")
+    println("  Проверка: $a^$x mod $p = $(powermod(a, x, p))")
+
+    if x == true_x
+        println("  ✓ Найденное решение совпадает с истинным!")
+    else
+        # Проверяем, является ли найденное x тоже решением
+        if powermod(a, x, p) == b
+            println("  ⚠ Найдено другое решение (задача может иметь несколько решений)")
+        else
+            println("  ✗ Ошибка: найденное x не является решением")
+        end
+    end
+else
+    println("\nРешение не найдено")
+end
+
+# Решение задачи от преподавателя
+println("\n" * "="^40)
+println("3. РЕШЕНИЕ ЗАДАЧИ ОТ ПРЕПОДАВАТЕЛЯ")
+println("="^40)
+println("Введите параметры задачи в формате: p a b")
+println("Пример: 107 10 64")
+println("Для выхода введите 'exit'")
+println("-"^40)
+
+while true
+    print("\n&gt; ")
+    input = readline()
+
+    if lowercase(input) == "exit"
+        println("Выход из программы...")
+        break
+    end
+
+    try
+        values = split(input)
+        if length(values) != 3
+            println("Ошибка: нужно ввести ровно 3 числа")
+            continue
+        end
+
+        p_input = parse(Int, values[1])
+        a_input = parse(Int, values[2])
+        b_input = parse(Int, values[3])
+
+        println("\nЗадача: $a_input^x ≡ $b_input (mod $p_input)")
+        println("Запуск алгоритма...")
+
+        # Замеряем время выполнения
+        start_time = time()
+        x_result = pollard_rho_dlog(p_input, a_input, b_input)
+        end_time = time()
+
+        if x_result !== nothing
+            println("\n✓ Решение найдено!")
+            println("  x = $x_result")
+            println("  Проверка: $a_input^$x_result mod $p_input = $(powermod(a_input, x_result, p_input))")
+            println("  Время выполнения: $(round(end_time - start_time, digits=4)) секунд")
+        else
+            println("\n✗ Решение не найдено")
+            println("Возможные причины:")
+            println("  1. Задача не имеет решения")
+            println("  2. Превышено максимальное число итераций")
+            println("  3. p не является простым числом")
+            println("  4. a не является генератором поля")
+        end
+
+        println("\n" * "-"^40)
+        println("Введите следующую задачу или 'exit' для выхода")
+
+    catch e
+        println("Ошибка ввода: $e")
+        println("Пожалуйста, введите три целых числа через пробел")
+    end
+end
+</code></pre>
+<p>end</p>
+<h1 id="-1">==================================================</h1>
+<h1 id="-2">ЗАПУСК ПРОГРАММЫ</h1>
+<h1 id="-3">==================================================</h1>
+<p>if abspath(PROGRAM_FILE) == @<strong>FILE</strong>
+    println("Начало выполнения лабораторной работы №7")
+    println("Версия Julia: $(VERSION)")
+    println("Дата и время запуска: $(now())")
+    println()</p>
+<pre><code>main()
+
+println("\n" * "="^60)
+println("Лабораторная работа завершена успешно!")
+println("="^60)
+</code></pre>
+<p>end</p>
+      </body>
+      </html>
+    
